@@ -2,6 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 class Perceptron:
     """Percceptron classifier
@@ -68,39 +69,39 @@ class Perceptron:
         return np.dot(X,self.w_) + self.b_
     
     def predict(self,X):
-        """REturn class label after unit step"""
+        """Return class label after unit step"""
         return np.where(self.net_input(X) >= 0.0,1,0) 
     
+
+
+
+###MAIN
 
 s = 'https://archive.ics.uci.edu/ml/'\
     'machine-learning-databases/iris/iris.data'
 
-print ('From URL: ', s)
 
 df = pd.read_csv(s, header=None, encoding='utf-8')
 
 
-
-#print(df.tail())
-
+#Store expected values in y, following function call, stores 4th column of 0 to 100 rows
 y = df.iloc[0:100,4].values
-print(y)
 
 y = np.where(y == 'Iris-setosa',0,1)
-print(y)
 
+#Store features at column 0 and 1 in X, following function call, stores 0th and 1 column of 0 to 100 rows
 X = df.iloc[0:100,[0,2]].values
-
+print(df.head())
 #plt.scatter(X[:50,0],X[:50,1], color = 'red', marker = 'o', label = 'setosa')
 #plt.scatter(X[50:100,0],X[50:100,1], color = 'blue', marker = 's', label = 'Versicolor')
 
-#plt.xlabel('Sepal Length[cm]')
-#plt.ylabel('Petal Length[cm]')
-#plt.legend(loc='upper left')
-#plt.show()
+# plt.xlabel('Sepal Length[cm]')
+# plt.ylabel('Petal Length[cm]')
+# plt.legend(loc='upper left')
+# plt.show()
 
 
-from matplotlib.colors import ListedColormap
+
 def plot_decision_regions(X,y,classifier, resolution = 0.02):
     markers = ('o', 's', '^', 'v', '<')
     colors  = ('red', 'blue', 'lightgreen', 'gray', 'cyan')
@@ -110,24 +111,38 @@ def plot_decision_regions(X,y,classifier, resolution = 0.02):
     x2_min, x2_max = X[:,1].min() - 1, X[:,1].max() + 1
     xx1, xx2 = np.meshgrid(np.arange(x1_min,x1_max, resolution), np.arange(x2_min,x2_max,resolution))
 
-    lab = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]))
+    print("X1min: " + str(x1_min) + "x1_max: "+ str(x1_max) + "x2_min: " + str(x2_min) + "x2_max: " + str(x2_max))
+    print (np.array([xx1.ravel(), xx2.ravel()]).T)
+    lab = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T)
+    print("Shubhsha LAB: " + str(xx1.shape)+ " " + str(len(lab)))
+    #xx1.shape returns (numrows,num_columns) in xx1 which is (305,235)
+    #lab initially is a 1d array of 71675 entries. These are output for all the values xx1, xx2 generated in
+    #meshgrid function
+    #reshape function divides 71675 as per the shape arguement provided(305,235)
+    #Basically Now we have mapping such that (xx1,xx2) can be used as coordinates to access correct y values
+    #in lab. This grid can be used to create a filled counter then
+
     lab = lab.reshape(xx1.shape)
+    #print(lab)
     plt.contourf(xx1, xx2, lab, alpha= 0.3, cmap = cmap)
     plt.xlim(xx1.min(), xx1.max())
     plt.ylim(xx2.min(), xx2.max())
 
+    #np.unique(y) = [0,1]
+    #enumerate creates [0,0] and [1,1]
+    #This call is used to plot training data
     for idx, c1 in enumerate(np.unique(y)):
         plt.scatter(x= X[y==c1,0],
                     y= X[y==c1, 1],
                     alpha = 0.8,
                     c = colors[idx],
                     marker = markers[idx],
-                    label=f'Class{cl}',
+                    label=f'Class{c1}',
                     edgecolor='black' 
                     )
-        
+    
 ppn = Perceptron(eta = 0.1, n_iter = 10)
-#ppn.fit(X,y)
+ppn.fit(X,y)
 plot_decision_regions(X, y, classifier=ppn)
 plt.xlabel('Sepal Length[cm]')
 plt.ylabel('Petal Length[cm]')
